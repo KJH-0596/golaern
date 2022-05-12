@@ -26,5 +26,5 @@ func main(){
 	e := echo.New()
 	e.GET("/", handleHome)
 	e.POST("/scrape", handlScrape)
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(":1324"))
 }
