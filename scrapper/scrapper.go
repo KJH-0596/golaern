@@ -14,7 +14,6 @@ import (
 
 type extractedJob struct {
 	id			string
-	id2			string
 	title		string
 	location	string
 	salary		string
@@ -70,15 +69,14 @@ func getPage(page int, url string, mainC chan<- []extractedJob){
 }
 
 func extracteJob(card *goquery.Selection, c chan <- extractedJob) {
-	id, _ := card.Attr("data-jk")
-	id2, _ := card.Attr("data-mobtk")
+	id, _ := card.Find("h2>a").Attr("data-jk")
+	// id = id
 	title := CleanString(card.Find("h2>a>span").Text())
 	location := CleanString(card.Find(".companyLocation").Text())
 	salary := CleanString(card.Find(".salary-snippet-container").Text())
 	summary := CleanString(card.Find(".job-snippet").Text())
 	c <- extractedJob{
 		id: id,
-		id2: id2,
 		title: title,
 		location: location,
 		salary: salary,
@@ -118,7 +116,7 @@ func writeJobs(jobs []extractedJob){
 	checkErr(wErr)
 
 	for _, job := range jobs {
-		jobSlice := []string{"https://kr.indeed.com/viewjob?jk=" + job.id + "&tk=" + job.id2, job.title, job.location, job.salary, job.summary}
+		jobSlice := []string{"https://kr.indeed.com/채용보기?jk=" + job.id, job.title, job.location, job.salary, job.summary}
 		jwErr := w.Write(jobSlice)
 		checkErr(jwErr)
 	}
