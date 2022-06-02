@@ -41,6 +41,31 @@ func Scrape(term string){
 	fmt.Println("Done, extracted", len(jobs))
 }
 
+// ------------------------------
+// func knowPages(url string) int{
+// 	pages := 0
+// 	res, err := http.Get(url)
+// 	checkErr(err)
+// 	checkCode(res)
+
+// 	defer res.Body.Close()
+
+// 	doc, err := goquery.NewDocumentFromReader(res.Body)
+// 	checkErr(err)
+
+// 	parsePages := doc.Find("searchCountPages").Text()
+// 	slice := strings.Split(parsePages, " ")
+	
+// 	for _, str := range slice {
+// 		strPages := string(str[len(str) - 1]);
+// 		strPages = strings.Replace(strPages, ",", "", -1);
+
+// 	}
+
+// 	return pages
+// }
+// ------------------------------
+
 func getPage(page int, url string, mainC chan<- []extractedJob){
 	var jobs []extractedJob
 	c := make(chan extractedJob)
