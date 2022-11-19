@@ -45,7 +45,7 @@ func main() {
 }
 
 func writeJobs(jobs []extractedJob) {
-	file, err := os.Create("jobs.csv")
+	file, err := os.Create(keyword + ".csv")
 	checkErr(err)
 
 	w := csv.NewWriter(file)
