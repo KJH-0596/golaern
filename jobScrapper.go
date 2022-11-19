@@ -8,8 +8,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	ccsv "github.com/tsak/concurrent-csv-writer"
 )
 
 type extractedJob struct {
@@ -25,22 +27,26 @@ var keyword string = os.Args[1]
 var baseURL string = "https://www.saramin.co.kr/zf_user/search/recruit?searchword=" + keyword +"&go=&flag=n&searchMode=1&searchType=search&search_done=y&search_optional_item=n&recruitPage=1&recruitSort=relation&recruitPageCount=100&inner_com_type=&company_cd=0%2C1%2C2%2C3%2C4%2C5%2C6%2C7%2C9%2C10&show_applied=&quick_apply=&except_read=&ai_head_hunting="
 
 func main() {
-
+	
 	var jobs []extractedJob
 	c := make(chan []extractedJob)
 	totalPages := getPages()
 	fmt.Println("totalPages : ", totalPages)
-
+	
 	for i := 1; i <= totalPages; i++ {
 		go getPage(i, c)
 	}
-
+	
 	for i := 1; i<=totalPages; i++ {
 		extractedJobs := <- c
 		jobs = append(jobs, extractedJobs...)
 	}
-
-	writeJobs(jobs)
+	
+	start := time.Now()
+	// writeJobs(jobs)
+	cwriteJobs2(jobs)
+	elapsed := time.Since(start)
+	fmt.Printf("The total time %s", elapsed)
 	fmt.Println("Done, extracted", len(jobs))
 }
 
@@ -56,10 +62,30 @@ func writeJobs(jobs []extractedJob) {
 	wErr := w.Write(headers)
 	checkErr(wErr)
 
+	// write jobs
 	for _, job := range jobs {
 		jobSlice := []string{job.title, job.corp, job.condition, job.location, job.tag, job.link}
 		jwErr := w.Write(jobSlice)
 		checkErr(jwErr)
+	}
+}
+func cwriteJobs2(jobs []extractedJob) {
+	csv, err := ccsv.NewCsvWriter(keyword + ".csv")
+	checkErr(err)
+
+	defer csv.Close()
+
+	headers := []string{"Title", "Corp", "Condition", "Location", "Tag", "Link"}
+
+	csv.Write(headers)
+
+	done := make(chan bool)
+
+	for _, job := range jobs {
+		go func(job extractedJob) {
+			csv.Write([]string{job.title, job.corp, job.condition, job.location, job.tag, job.link})
+			done <- true
+		}(job)
 	}
 }
 
