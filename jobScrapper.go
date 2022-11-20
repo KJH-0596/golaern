@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/csv"
 	"fmt"
 	"log"
 	"net/http"
@@ -31,44 +30,46 @@ func main() {
 	var jobs []extractedJob
 	c := make(chan []extractedJob)
 	totalPages := getPages()
-	fmt.Println("totalPages : ", totalPages)
+	// fmt.Println("totalPages : ", totalPages)
 	
 	for i := 1; i <= totalPages; i++ {
 		go getPage(i, c)
 	}
 	
+	start := time.Now()
+
 	for i := 1; i<=totalPages; i++ {
 		extractedJobs := <- c
 		jobs = append(jobs, extractedJobs...)
 	}
 	
-	start := time.Now()
 	// writeJobs(jobs)
 	cwriteJobs2(jobs)
 	elapsed := time.Since(start)
-	fmt.Printf("The total time %s", elapsed)
+	fmt.Printf("The total time %s\n", elapsed)
 	fmt.Println("Done, extracted", len(jobs))
 }
 
-func writeJobs(jobs []extractedJob) {
-	file, err := os.Create(keyword + ".csv")
-	checkErr(err)
+// func writeJobs(jobs []extractedJob) {
+// 	file, err := os.Create(keyword + ".csv")
+// 	checkErr(err)
 
-	w := csv.NewWriter(file)
-	defer w.Flush()
+// 	w := csv.NewWriter(file)
+// 	defer w.Flush()
 
-	headers := []string{"Title", "Corp", "Condition", "Location", "Tag", "Link"}
+// 	headers := []string{"Title", "Corp", "Condition", "Location", "Tag", "Link"}
 
-	wErr := w.Write(headers)
-	checkErr(wErr)
+// 	wErr := w.Write(headers)
+// 	checkErr(wErr)
 
-	// write jobs
-	for _, job := range jobs {
-		jobSlice := []string{job.title, job.corp, job.condition, job.location, job.tag, job.link}
-		jwErr := w.Write(jobSlice)
-		checkErr(jwErr)
-	}
-}
+// 	// write jobs
+// 	for _, job := range jobs {
+// 		jobSlice := []string{job.title, job.corp, job.condition, job.location, job.tag, job.link}
+// 		jwErr := w.Write(jobSlice)
+// 		checkErr(jwErr)
+// 	}
+// }
+
 func cwriteJobs2(jobs []extractedJob) {
 	csv, err := ccsv.NewCsvWriter(keyword + ".csv")
 	checkErr(err)
@@ -86,6 +87,9 @@ func cwriteJobs2(jobs []extractedJob) {
 			csv.Write([]string{job.title, job.corp, job.condition, job.location, job.tag, job.link})
 			done <- true
 		}(job)
+	}
+	for i := 0; i < len(jobs); i++ {
+		<-done
 	}
 }
 
@@ -157,10 +161,10 @@ func getPages() int {
 	
 	result, err := strconv.Atoi(page_str);
 	checkErr(err)
-	fmt.Println(result)
+	// fmt.Println(result)
 
 	pages := result/100 + 1
-	fmt.Println("pages : ", pages)
+	// fmt.Println("pages : ", pages)
 
 	return pages
 }
