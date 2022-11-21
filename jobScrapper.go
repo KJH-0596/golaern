@@ -7,7 +7,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	ccsv "github.com/tsak/concurrent-csv-writer"
@@ -36,7 +35,6 @@ func main() {
 		go getPage(i, c)
 	}
 	
-	start := time.Now()
 
 	for i := 1; i<=totalPages; i++ {
 		extractedJobs := <- c
@@ -45,9 +43,7 @@ func main() {
 	
 	// writeJobs(jobs)
 	cwriteJobs2(jobs)
-	elapsed := time.Since(start)
-	fmt.Printf("The total time %s\n", elapsed)
-	fmt.Println("Done, extracted", len(jobs))
+	fmt.Println("Extracted " + keyword + " :", len(jobs))
 }
 
 // func writeJobs(jobs []extractedJob) {
